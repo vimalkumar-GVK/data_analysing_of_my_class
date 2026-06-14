@@ -42,12 +42,16 @@ data ={
          80, 57, 31, 69, 96, 44, 75, 53, 91, 62,
         24, 83, 47, 90, 63, 76, 41, 15, 29, 72,
         87, 45, 92, 61, 74, 38, 99, 56, 81, 27,
-        68, 95, 43, 77, 52, 89, 34, 71, 110, 58,]
+        68, 95, 43, 77, 52, 89, 34, 71, 67, 58,]
 }
 df = pd.DataFrame(data)
+df["Total"] = df[["Tamil", "English", "Maths", "ML"]].sum(axis=1)
+df["Mean"] = df[["Tamil", "English", "Maths", "ML"]].mean(axis=1)
+df["Median"] = df[["Tamil", "English", "Maths", "ML"]].median(axis=1)
+
+df.to_excel("student.xlsx", index=False)
 print(df)
-df.to_excel("student.xlsx",index=True)
-print("File is created")
+
 # print(df)
 df["Total"]=df[["Tamil","English","Maths","ML"]].sum(axis=1)
 df["Average"]=df[["Tamil","English","Maths","ML"]].mean(axis=1)
@@ -101,3 +105,82 @@ df.loc[df["NAME"]=="Punith.B","ID"]="BIT001"
 df.to_excel("student.xlsx",index=False)
 print("The xlsx file is edited")
 print(df.head())
+
+#top 5 ranked students 
+
+top5 = df.sort_values(by="Total", ascending=False).head(5)
+
+print(top5[["NAME", "Total"]])
+
+plt.figure(figsize=(10,6))
+
+bars = plt.bar(top5["NAME"], top5["Total"])
+
+plt.title("Top 5 Students in the Class")
+plt.xlabel("Students")
+plt.ylabel("Total Marks")
+plt.xticks(rotation=20)
+
+# Display marks on top of bars
+for bar in bars:
+    height = bar.get_height()
+    plt.text(
+        bar.get_x() + bar.get_width()/2,
+        height + 2,
+        f'{height:.0f}',
+        ha='center'
+    )
+
+plt.tight_layout()
+plt.show()
+
+least5 = df.sort_values(by="Total", ascending=True).head(5)
+
+print(least5[["NAME", "Total"]])
+
+plt.figure(figsize=(10,6))
+
+bars = plt.bar(least5["NAME"], least5["Total"])
+
+plt.title("Bottom 5 Students in the Class")
+plt.xlabel("Students")
+plt.ylabel("Total Marks")
+plt.xticks(rotation=20)
+
+for bar in bars:
+    height = bar.get_height()
+    plt.text(
+        bar.get_x() + bar.get_width()/2,
+        height + 2,
+        f"{height:.0f}",
+        ha="center"
+    )
+
+plt.tight_layout()
+plt.show()
+
+#overall
+df["Result"] = np.where(
+    (df[subjects] >= 40).all(axis=1),
+    "Pass",
+    "Fail"
+)
+result_count = df["Result"].value_counts()
+
+print(result_count)
+plt.figure(figsize=(8,8))
+
+plt.pie(
+    result_count,
+    labels=result_count.index,
+    autopct='%1.1f%%',
+    colors=['red', 'green'],
+    explode=(0.05, 0.1),  # slightly separate slices
+    shadow=True,
+    startangle=90
+)
+
+plt.title("Student Pass vs Fail Analysis")
+plt.legend(title="Result")
+plt.show()
+print(df.describe())
